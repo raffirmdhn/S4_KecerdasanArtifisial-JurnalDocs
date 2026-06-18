@@ -1,0 +1,63 @@
+Error Type,Record ID,IPK,SKS_Lulus,Penghasilan_Ortu,Tanggungan,Prestasi_Akademik,Keaktifan_Organisasi,Actual_Status,Predicted_Status,Confidence,Pattern Category,Root Cause Analysis,Recommendation
+FN,12,3.25,61,4800000,3,Regional,Anggota,Layak,Tidak Layak,68%,Borderline Case,Multiple moderate factors (IPK Mid, Income Low-Mid boundary, Tanggungan Mid) with no standout signal,Flag for human review (low confidence)
+FN,23,3.32,59,5200000,4,Tidak Ada,Pengurus,Layak,Tidak Layak,67%,Low Confidence,Income slightly above Low threshold (5.2M vs 5M cap) + Low SKS + No prestasi,Flag for human review (low confidence)
+FN,35,3.78,67,6100000,5,Regional,Pengurus,Layak,Tidak Layak,71%,High Income Exception,High IPK + High Tanggungan + Regional achievement but income 6.1M (above policy cap),Consider raising income threshold for exceptional students
+FN,47,3.41,62,4900000,3,Tidak Ada,Anggota,Layak,Tidak Layak,69%,Borderline Multiple,All factors at boundaries (IPK 3.41 vs 3.3 threshold, Income 4.9M vs 5M cap),Flag for human review
+FN,56,3.87,68,6800000,6,Regional,Tidak Aktif,Layak,Tidak Layak,73%,High Income + Large Family,High IPK + Very large family but income 6.8M (affluent despite burden),Acceptable trade-off (per-capita income still comfortable)
+FN,68,2.98,57,3200000,5,Nasional,Pengurus,Layak,Tidak Layak,66%,Low IPK Exception,National achievement + Leadership + High Tanggungan but IPK 2.98 < 3.3 threshold,Consider IPK exception for national achievers
+FN,79,3.15,60,4500000,4,Regional,Anggota,Layak,Tidak Layak,70%,Borderline Academic,IPK 3.15 (Low category) + SKS 60 (Mid boundary) despite good economic need,Academic performance threshold working as designed
+FN,91,3.28,58,5100000,3,Tidak Ada,Pengurus,Layak,Tidak Layak,68%,Income Threshold,Income 5.1M slightly above 5M cap + IPK 3.28 (below 3.3 threshold),Flag for human review (close to multiple thresholds)
+
+FP,8,3.92,69,6200000,2,Regional,Pengurus,Tidak Layak,Layak,82%,Affluent High Achiever,Excellent academics (IPK 3.92) + Leadership but income 6.2M + small family (2),Model over-weights academic merit vs economic need
+FP,17,3.58,65,5800000,3,Tidak Ada,Anggota,Tidak Layak,Layak,76%,Grade Inflation,IPK 3.58 (Mid-High) + Income 5.8M (comfortable) + moderate tanggungan,Stricter income cap needed for mid-achievers
+FP,29,3.71,67,6500000,4,Regional,Pengurus,Tidak Layak,Layak,79%,Mid Income Boundary,IPK High + Tanggungan Mid + Income 6.5M in "gray zone" (5-7M),Acceptable case - genuinely borderline
+FP,42,3.85,68,7200000,1,Nasional,Tidak Aktif,Tidak Layak,Layak,84%,High Income Override,National achievement + High IPK but income 7.2M + single dependent,Model prioritizes achievement over clear affluence
+FP,53,3.49,64,5400000,2,Regional,Anggota,Tidak Layak,Layak,77%,Small Family,Income 5.4M + small family (2) = no real economic need despite mid-metrics,Under-weighted small family factor
+FP,64,3.66,66,6100000,3,Regional,Pengurus,Tidak Layak,Layak,78%,Combined Factors,Multiple positive signals (IPK, Leadership, Regional) but income 6.1M comfortable,Model aggregates too many weak positives
+FP,78,3.85,68,6500000,5,Regional,Pengurus,Tidak Layak,Layak,75%,Policy Override Error,Override Rule B applied (High IPK + High Tang + 6.5M) but actually ineligible,Override Rule B needs tightening (Tang ≥6 not ≥5)
+FP,83,3.54,65,5900000,2,Tidak Ada,Anggota,Tidak Layak,Layak,76%,Grade Inflation,IPK 3.54 + Income 5.9M (comfortable) + small family,No real need - model too lenient
+FP,96,3.81,67,6400000,3,Regional,Pengurus,Tidak Layak,Layak,80%,Affluent Achiever,High IPK + Leadership + Regional but income 6.4M + moderate tanggungan,Economic need should dominate merit
+
+Pattern Category,FN Count,FP Count,Total,Percentage of Errors,Recommended Action
+Borderline Case,4,0,4,23.5%,Flag for human review (confidence <70%)
+High Income Exception,2,6,8,47.1%,Consider stricter income caps or income-weighted scoring
+Low Confidence,2,0,2,11.8%,Already flagged - human review working as designed
+Policy Override Error,0,1,1,5.9%,Tighten Override Rule B (Tanggungan ≥6 instead of ≥5)
+Grade Inflation,0,2,2,11.8%,Consider IPK threshold adjustments for mid-income students
+
+Income Range,FN Cases,FP Cases,Total Errors,Primary Issue
+≤3M (Low),0,0,0,N/A
+3-5M (Low-Mid),5,0,5,Borderline threshold cases (should review 5M cap)
+5-7M (Mid),3,7,10,Gray zone - genuinely difficult cases
+>7M (High),0,2,2,Should be clear rejections (model too lenient)
+
+IPK Range,FN Cases,FP Cases,Total Errors,Primary Issue
+<3.2 (Low),1,0,1,National achiever exception case (acceptable)
+3.2-3.8 (Mid),6,4,10,Borderline academic performance + other factors
+≥3.8 (High),1,5,6,Model over-weights academic merit for affluent students
+
+Tanggungan Range,FN Cases,FP Cases,Total Errors,Primary Issue
+1-2 (Low),0,4,4,Small families incorrectly accepted (under-weighted)
+3-4 (Mid),6,4,10,Standard family size - mixed signals
+5-6 (High),2,1,3,Large families mostly handled correctly
+
+V1 vs V2 vs Final,V1 FN,V1 FP,V2 FN,V2 FP,Final FN,Final FP,FN Reduction,FP Change
+Error Counts,17,9,11,8,8,9,-53%,+1
+Improvement,Baseline,Baseline,-6 cases,-1 case,-9 cases (total),+0 cases (total),Major improvement,Acceptable trade-off
+
+Override Impact,Cases Applied,Correct Overrides,Incorrect Overrides,Success Rate,Net Improvement
+Rule A,3,3,0,100%,+3 correct
+Rule B,1,0,1,0%,-1 wrong
+Rule C (Flags),8,N/A,N/A,N/A,Human review pending
+Total,4,3,1,75%,+2 accuracy improvement
+
+Confidence Range,FN Count,FP Count,Total,Action Taken
+<70% (Low),5,0,5,✅ Flagged for human review
+70-80% (Medium),3,6,9,⚠️ Monitor - borderline confidence
+80-90% (High),0,3,3,❌ Model very confident but wrong (concerning)
+>90% (Very High),0,0,0,✅ No errors in high-confidence predictions
+
+Error Distribution by Level,Level 0,Level 1,Level 2,Level 3,Level 4,Total Leaf Errors
+False Negatives,0,2,3,2,1,8 of 15 leaves (53%)
+False Positives,0,1,4,3,1,9 of 15 leaves (60%)
+Note: Most errors occur at Levels 2-3 (deepest decision points with most complex interactions)

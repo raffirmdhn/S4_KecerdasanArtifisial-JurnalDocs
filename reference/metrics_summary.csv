@@ -1,0 +1,39 @@
+Model Version,Accuracy,Precision,Recall,F1-Score,True Positives,False Positives,False Negatives,True Negatives,Total Samples,Avg Confidence,Total Nodes,Leaf Nodes,Max Depth
+V1 Baseline,74.00%,73.53%,59.52%,65.79%,25,9,17,49,100,78%,29,15,4
+V2 Enhanced,81.00%,79.49%,73.81%,76.54%,31,8,11,50,100,87%,29,15,4
+V2 + Overrides,83.00%,79.07%,80.95%,80.00%,34,9,8,49,100,87%,29,15,4
+
+Model Version,Key Feature,Information Gain,Primary Innovation,Error Reduction (FN)
+V1 Baseline,Penghasilan_Ortu (continuous),0.2287,Manual ID3 implementation,Baseline (17 FN)
+V2 Enhanced,Penghasilan_Kategori (categorical),0.2450,Domain-informed categorical features,-35% (11 FN)
+V2 + Overrides,Policy Layer,N/A,Hybrid ML + business rules,-53% (8 FN)
+
+Improvement,From,To,Accuracy Delta,Recall Delta,FN Delta,Key Change
+Baseline → Enhanced,V1,V2,+7.00 pp,+14.29 pp,-6 cases,Added 4 categorical features
+Enhanced → Final,V2,V2+Override,+2.00 pp,+7.14 pp,-3 cases,Refined policy overrides
+
+Class,Actual Count (Training),Actual Count (Testing),Percentage (Training),Percentage (Testing)
+Layak,157,42,39.25%,42.00%
+Tidak Layak,243,58,60.75%,58.00%
+Total,400,100,100.00%,100.00%
+
+Stopping Criteria,Value,Rationale
+MIN_SAMPLES_LEAF,10,Prevent overfitting on rare cases
+MAX_DEPTH,4,Balance complexity vs interpretability
+MIN_ENTROPY,0.3,Stop at relatively pure nodes (>90% one class)
+MIN_IG,0.01,Avoid splitting on noise
+
+Training Time,V1 Baseline,V2 Enhanced,V2 + Overrides
+Dataset Generation,0.8s,0.8s,0.8s
+Feature Engineering,N/A,0.3s,0.3s
+Tree Building,1.5s,1.8s,1.8s
+Testing,0.4s,0.5s,0.5s
+Override Application,N/A,N/A,0.4s
+Total Pipeline,2.7s,3.4s,3.8s
+
+Target Criteria,Target Value,V1 Result,V2 Result,V2+Override Result,Status
+Accuracy,≥78%,74%,81%,83%,✅ Exceeded by 5pp
+Recall,≥70%,59.52%,73.81%,80.95%,✅ Exceeded by 11pp
+False Negatives,≤10,17,11,8,✅ Under target
+F1-Score,≥70%,65.79%,76.54%,80.00%,✅ Exceeded by 10pp
+Manual Implementation,Required,✅,✅,✅,✅ No sklearn used
