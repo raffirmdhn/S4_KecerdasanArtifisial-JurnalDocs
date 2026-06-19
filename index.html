@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Klasifikasi Beasiswa - Decision Tree</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .animate-fadeInUp {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        .animate-slideInRight {
+            animation: slideInRight 0.6s ease-out forwards;
+        }
+
+        .animate-pulse-slow {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .animate-bounce-slow {
+            animation: bounce 3s ease-in-out infinite;
+        }
+
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        .delay-400 { animation-delay: 0.4s; }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.2);
+        }
+
+        .input-focus {
+            transition: all 0.3s ease;
+        }
+
+        .input-focus:focus {
+            transform: scale(1.02);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .status-badge {
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: inline-block;
+            animation: fadeIn 0.5s ease-out, bounce 1s ease-in-out;
+        }
+
+        .status-layak {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+        }
+
+        .status-tidak-layak {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
+        }
+
+        .confidence-bar {
+            background: #e5e7eb;
+            border-radius: 50px;
+            height: 30px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .confidence-fill {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            transition: width 1s ease-out;
+            border-radius: 50px;
+        }
+
+        .error {
+            font-size: 0.875rem;
+            color: #ef4444;
+            margin-top: 0.25rem;
+            display: block;
+            min-height: 20px;
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .decision-path {
+            background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%);
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .decision-path ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .decision-path li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .decision-path li::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white py-16 animate-fadeInUp">
+        <div class="container mx-auto px-4 text-center">
+            <div class="inline-block animate-bounce-slow mb-4">
+                <i class="fas fa-graduation-cap text-6xl"></i>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">
+                Sistem Klasifikasi Beasiswa
+            </h1>
+            <p class="text-xl md:text-2xl opacity-90">
+                <i class="fas fa-brain mr-2"></i>Decision Tree Classification System
+            </p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-12">
+        <!-- Form Section -->
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white rounded-2xl shadow-2xl overflow-hidden animate-fadeInUp delay-400">
+                <div class="gradient-bg text-white py-6 px-8">
+                    <h2 class="text-2xl font-bold">
+                        <i class="fas fa-clipboard-list mr-3"></i>Form Pengajuan Beasiswa
+                    </h2>
+                    <p class="opacity-90 mt-2">Lengkapi data berikut untuk klasifikasi kelayakan beasiswa</p>
+                </div>
+
+                <form id="beasiswaForm" class="p-8">
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <!-- IPK -->
+                        <div class="form-group">
+                            <label class="block text-gray-700 font-semibold mb-2">
+                                <i class="fas fa-star text-yellow-500 mr-2"></i>IPK (Indeks Prestasi Kumulatif)
+                            </label>
+                            <input type="number" id="ipk" step="0.01" min="2.5" max="4.0" required
+                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:outline-none input-focus"
+                                placeholder="Contoh: 3.50">
+                            <span id="ipk-error" class="error"></span>
+                            <small class="text-gray-500 text-sm">Rentang: 2.50 - 4.00</small>
+                        </div>
+
+                        <!-- SKS -->
+                        <div class="form-group">
+                            <label class="block text-gray-700 font-semibold mb-2">
+                                <i class="fas fa-book text-blue-500 mr-2"></i>SKS Lulus
+                            </label>
+                            <input type="number" id="sks" min="54" max="72" required
+                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:outline-none input-focus"
+                                placeholder="Contoh: 60">
+                            <span id="sks-error" class="error"></span>
+                            <small class="text-gray-500 text-sm">Rentang: 54 - 72 SKS</small>
+                        </div>
+
+                        <!-- Penghasilan -->
+                        <div class="form-group">
+                            <label class="block text-gray-700 font-semibold mb-2">
+                                <i class="fas fa-money-bill-wave text-green-500 mr-2"></i>Penghasilan Orang Tua
+                            </label>
+                            <input type="number" id="penghasilan" min="1500000" max="8000000" step="100000" required
+                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:outline-none input-focus"
+                                placeholder="Contoh: 3000000">
+                            <span id="penghasilan-error" class="error"></span>
+                            <small class="text-gray-500 text-sm">Rentang: Rp 1.500.000 - Rp 8.000.000</small>
+                        </div>
+
+                        <!-- Tanggungan -->
+                        <div class="form-group">
+                            <label class="block text-gray-700 font-semibold mb-2">
+                                <i class="fas fa-users text-orange-500 mr-2"></i>Jumlah Tanggungan Keluarga
+                            </label>
+                            <input type="number" id="tanggungan" min="1" max="6" required
+                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:outline-none input-focus"
+                                placeholder="Contoh: 3">
+                            <span id="tanggungan-error" class="error"></span>
+                            <small class="text-gray-500 text-sm">Rentang: 1 - 6 orang</small>
+                        </div>
+
+                        <!-- Prestasi -->
+                        <div class="form-group">
+                            <label class="block text-gray-700 font-semibold mb-2">
+                                <i class="fas fa-trophy text-purple-500 mr-2"></i>Prestasi Akademik
+                            </label>
+                            <select id="prestasi" required
+                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:outline-none input-focus">
+                                <option value="">-- Pilih Prestasi --</option>
+                                <option value="Tidak Ada">Tidak Ada</option>
+                                <option value="Regional">Regional</option>
+                                <option value="Nasional">Nasional</option>
+                            </select>
+                        </div>
+
+                        <!-- Organisasi -->
+                        <div class="form-group">
+                            <label class="block text-gray-700 font-semibold mb-2">
+                                <i class="fas fa-sitemap text-red-500 mr-2"></i>Keaktifan Organisasi
+                            </label>
+                            <select id="organisasi" required
+                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:outline-none input-focus">
+                                <option value="">-- Pilih Status --</option>
+                                <option value="Tidak Aktif">Tidak Aktif</option>
+                                <option value="Anggota">Anggota</option>
+                                <option value="Pengurus">Pengurus</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="flex gap-4 mt-8">
+                        <button type="submit" 
+                            class="flex-1 gradient-bg text-white font-bold py-4 px-8 rounded-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300">
+                            <i class="fas fa-search mr-2"></i>Klasifikasi Sekarang
+                        </button>
+                        <button type="reset" 
+                            class="px-8 py-4 border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-100 transition-all duration-300">
+                            <i class="fas fa-redo mr-2"></i>Reset
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Result Section -->
+            <div id="result" class="mt-8 bg-white rounded-2xl shadow-2xl overflow-hidden animate-slideInRight" style="display: none;">
+                <div class="gradient-bg text-white py-6 px-8">
+                    <h2 class="text-2xl font-bold">
+                        <i class="fas fa-poll mr-3"></i>Hasil Klasifikasi
+                    </h2>
+                </div>
+                <div id="result-content" class="p-8">
+                    <!-- Content will be dynamically inserted -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-16">
+        <div class="container mx-auto px-4 text-center">
+            <div class="mb-4">
+                <i class="fas fa-code text-2xl mb-2"></i>
+            </div>
+            <p class="text-lg mb-2">
+                <strong>Decision Tree Classification System</strong>
+            </p>
+            <p class="text-gray-400">
+                Enhanced Model V2 + Policy Override
+            </p>
+            <div class="mt-4 flex justify-center gap-6 text-sm text-gray-400">
+                <a target="_blank" href="https://github.com/raffirmdhn/S4_KecerdasanArtifisial-JurnalDocs/blob/1cf5487d9a7771597cebe5e831ff5e3846e8eb41/reference/decision_rules_summary.md" class="text-white underline hover:text-purple-400 transition-colors duration-300"><i class="fas fa-check-circle mr-1"></i> 15 Decision Rules</a>
+                <a target="_blank" href="https://github.com/raffirmdhn/S4_KecerdasanArtifisial-JurnalDocs/blob/1cf5487d9a7771597cebe5e831ff5e3846e8eb41/technical/07_policy_overrides.md" class="text-white underline hover:text-purple-400 transition-colors duration-300"><i class="fas fa-layer-group mr-1"></i> Policy Override</a>
+                <a target="_blank" href="https://github.com/raffirmdhn/S4_KecerdasanArtifisial-JurnalDocs/blob/1cf5487d9a7771597cebe5e831ff5e3846e8eb41/summary_metrics.md" class="text-white underline hover:text-purple-400 transition-colors duration-300"><i class="fas fa-chart-bar mr-1"></i> Confidence Score</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
